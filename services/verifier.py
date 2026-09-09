@@ -1,27 +1,50 @@
 from urllib.parse import urlparse
 
-OFFICIAL_HINTS = (
-    "disney.com", "marvel.com", "warnerbros.com", "paramount.com",
-    "universalpictures.com", "sonypictures.com", "netflix.com",
+OFFICIAL_HOST_HINTS = (
+    "marvel.com",
+    "disney.com",
+    "warnerbros.com",
+    "paramount.com",
+    "universalpictures.com",
+    "sonypictures.com",
+    "netflix.com",
+    "a24films.com",
 )
-REPUTABLE_HINTS = (
-    "variety.com", "hollywoodreporter.com", "deadline.com",
-    "reuters.com", "apnews.com",
+
+REPUTABLE_HOST_HINTS = (
+    "variety.com",
+    "hollywoodreporter.com",
+    "deadline.com",
+    "reuters.com",
+    "apnews.com",
+    "entertainmentweekly.com",
 )
+
 UNOFFICIAL_TERMS = (
-    "concept trailer", "fan trailer", "fan-made", "fan made",
-    "ai trailer", "unofficial trailer", "parody",
+    "concept trailer",
+    "fan trailer",
+    "fan-made",
+    "fan made",
+    "unofficial trailer",
+    "ai trailer",
+    "ai-generated",
+    "ai generated",
+    "parody trailer",
 )
+
 OFFICIAL_TERMS = (
-    "official trailer", "official teaser", "studio released",
-    "released the trailer", "debuted the trailer",
+    "official trailer",
+    "official teaser",
+    "released the trailer",
+    "debuted the trailer",
+    "studio released",
 )
 
 def source_tier(url: str) -> str:
     host = (urlparse(url).hostname or "").lower()
-    if any(h in host for h in OFFICIAL_HINTS):
+    if any(hint in host for hint in OFFICIAL_HOST_HINTS):
         return "official"
-    if any(h in host for h in REPUTABLE_HINTS):
+    if any(hint in host for hint in REPUTABLE_HOST_HINTS):
         return "reputable"
     return "web"
 
@@ -30,18 +53,28 @@ def score_evidence(evidence: list[dict]) -> dict:
     contradiction = 0
 
     for e in evidence:
-        e["source_tier"] = source_tier(e.get("url", ""))
+        tier = source_tier(e.get("url", ""))
+        e["source_tier"] = tier
+
         text = f"{e.get('title','')} {e.get('excerpt','')}".lower()
-        tier = e["source_tier"]
         weight = 5 if tier == "official" else 3 if tier == "reputable" else 1
 
-        if any(term in text for term in OFFICIAL_TERMS):
+        has_support = any(term in text for term in OFFICIAL_TERMS)
+        has_contra = any(term in text for term in UNOFFICIAL_TERMS)
+
+        if has_support:
             support += weight
-        if any(term in text for term in UNOFFICIAL_TERMS):
+        if has_contra:
             contradiction += weight
 
+        if has_support and not has_contra:
+            e["stance"] = "support"
+        elif has_contra and not has_support:
+            e["stance"] = "contradiction"
+        else:
+            e["stance"] = "neutral"
+
     total = max(1, support + contradiction)
-    official_ratio = support / total
 
     if contradiction >= support + 3:
         verdict = "LIKELY UNOFFICIAL"
@@ -50,12 +83,14 @@ def score_evidence(evidence: list[dict]) -> dict:
     else:
         verdict = "UNVERIFIED"
 
-    confidence = round(min(0.96, 0.52 + abs(support - contradiction) / max(10, total) * 0.44), 2)
+    confidence = round(
+        min(0.96, 0.52 + abs(support - contradiction) / max(10, total) * 0.44),
+        2,
+    )
 
     return {
         "verdict": verdict,
         "confidence": confidence,
         "support_score": support,
         "contradiction_score": contradiction,
-        "official_support_ratio": round(official_ratio, 2),
     }
