@@ -3,50 +3,53 @@
 GhostFrame is an agentic media-verification app that investigates whether a movie trailer presented as "official" is actually supported by public evidence.
 
 ## Stack
-- Gemini Developer API (`gemini-2.5-flash`)
+- Vertex AI Gemini (`gemini-2.5-flash`)
 - Parallel Search API
 - FastAPI
 - Vanilla HTML/CSS/JS
 
-## Free-tier setup
-This project intentionally avoids Vertex AI authentication.
+## Authentication
+GhostFrame now uses **Vertex AI with Application Default Credentials (ADC)** instead of a Gemini API key.
+
+You need:
+- a Google Cloud project with Vertex AI API enabled
+- `GOOGLE_CLOUD_PROJECT`
+- optional `GOOGLE_CLOUD_LOCATION` (defaults to `global`)
+- your existing `PARALLEL_API_KEY`
 
 Create `.env`:
 ```env
-GEMINI_API_KEY=your_existing_key
-PARALLEL_API_KEY=your_existing_key
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=global
+PARALLEL_API_KEY=your-existing-parallel-key
 ```
 
 Do not commit `.env`.
 
-## Install
+## Local authentication
+Install Google Cloud CLI, then:
+
 ```bash
-python -m venv .venv
+gcloud auth application-default login
+gcloud config set project YOUR_PROJECT_ID
+gcloud services enable aiplatform.googleapis.com
 ```
 
-Windows:
-```bash
-.venv\Scripts\activate
-```
+Then install:
 
-macOS/Linux:
-```bash
-source .venv/bin/activate
-```
-
-Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Test both keys
+## Test Vertex AI + Parallel
 ```bash
 python auth_test.py
 ```
 
 Expected:
+
 ```text
-Gemini authentication passed
+Vertex AI authentication passed
 Parallel authentication passed
 ```
 
@@ -56,6 +59,7 @@ uvicorn app:app --reload --port 8080
 ```
 
 Open:
+
 ```text
 http://localhost:8080
 ```
