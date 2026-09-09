@@ -115,17 +115,4 @@ function renderResult(d){
   graph(d.evidence||[]);$("scanner").classList.add("hidden");$("results").classList.remove("hidden");$("results").scrollIntoView({behavior:"smooth"});
 }
 
-$("demoRun").onclick=()=>{
-  const btn=$("demoRun");
-  btn.disabled=true;
-  btn.textContent="ANALYZING DEMO...";
-  $("results").classList.add("hidden");
-  $("scanner").classList.remove("hidden");
-  animateSteps();
-  $("scanner").scrollIntoView({behavior:"smooth",block:"center"});
-  setTimeout(()=>{
-    renderResult(demoPayload);
-    btn.disabled=false;
-    btn.textContent="RUN DEMO MODE";
-  },2900);
-};
+
