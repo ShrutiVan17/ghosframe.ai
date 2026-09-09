@@ -81,3 +81,41 @@ $("run").onclick=async()=>{
    }
  }
 };
+
+const demoPayload={
+  claim:"This is the official trailer for Avengers: Secret Wars.",
+  plan:{
+    verification_questions:[
+      "Has Marvel Studios officially released a trailer for Avengers: Secret Wars?",
+      "Do major entertainment outlets confirm an official trailer release?",
+      "Are circulating videos labeled concept, fan-made, or unofficial?",
+      "Does the claimed media trace back to an official studio source?"
+    ]
+  },
+  score:{verdict:"LIKELY UNOFFICIAL",confidence:.94,support_score:1,contradiction_score:8},
+  analysis:{
+    summary:"The available provenance signals do not support this as an official studio trailer. The strongest evidence points to unofficial or concept-trailer circulation rather than an authenticated Marvel release.",
+    provenance_summary:"Demo data: GhostFrame compares the claim against source authority, publication context, contradictory wording, and provenance signals. Connect the live Cloud Run backend for real-time verification."
+  },
+  evidence:[
+    {title:"Marvel official channels",url:"https://www.marvel.com/",source_tier:"official",stance:"contradiction",excerpt:"No matching official trailer release is demonstrated in this demo dataset."},
+    {title:"Major entertainment reporting",url:"https://variety.com/",source_tier:"reputable",stance:"neutral",excerpt:"Reputable coverage is used to confirm whether a trailer release was officially announced."},
+    {title:"Concept / fan trailer signals",url:"#",source_tier:"web",stance:"contradiction",excerpt:"Circulating uploads may use labels such as concept trailer, fan-made, unofficial, or AI-generated."}
+  ]
+};
+
+function renderResult(d){
+  const s=d.score||{},v=s.verdict||"UNVERIFIED";$("verdict").textContent=v;
+  $("verdict").style.color=v==="SUPPORTED"?"#34d399":v==="LIKELY UNOFFICIAL"?"#fb7185":"#22d3ee";
+  $("confidence").textContent="CONFIDENCE "+Math.round((s.confidence||0)*100)+"%  ·  SUPPORT "+(s.support_score||0)+"  ·  CONTRADICTION "+(s.contradiction_score||0);
+  $("summary").textContent=d.analysis?.summary||"Investigation complete.";
+  $("trace").innerHTML=(d.plan?.verification_questions||[]).map((q,i)=>'<div class="trace-item" style="animation-delay:'+i*.08+'s"><b>0'+(i+1)+'</b><span>'+esc(q)+'</span></div>').join("");
+  $("evidence").innerHTML=(d.evidence||[]).map((e,i)=>'<div class="source" style="animation-delay:'+i*.06+'s"><a target="_blank" rel="noopener" href="'+encodeURI(e.url||"#")+'">'+esc(e.title)+'</a><span class="pill">'+esc((e.source_tier||"web").toUpperCase())+'</span><p>'+esc((e.excerpt||"").slice(0,300))+'</p></div>').join("");
+  $("provenance").textContent=d.analysis?.provenance_summary||"No provenance summary available.";
+  graph(d.evidence||[]);$("scanner").classList.add("hidden");$("results").classList.remove("hidden");$("results").scrollIntoView({behavior:"smooth"});
+}
+
+$("demoRun").onclick=()=>{
+  $("results").classList.add("hidden");$("scanner").classList.remove("hidden");animateSteps();
+  setTimeout(()=>renderResult(demoPayload),2900);
+};
