@@ -7,8 +7,8 @@ MODEL = "gemini-2.5-flash"
 def _client():
     return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
-def _extract_json(text: str):
-    cleaned = text.strip()
+def _clean_json(text: str):
+    cleaned = (text or "").strip()
     if cleaned.startswith("```"):
         cleaned = cleaned.split("\n", 1)[1]
         cleaned = cleaned.rsplit("```", 1)[0]
@@ -17,45 +17,62 @@ def _extract_json(text: str):
 def plan_investigation(claim: str, media_url: str | None = None) -> dict:
     prompt = f"""
 You are GhostFrame's investigation planner.
-Create a concise web-verification plan for this movie-trailer authenticity claim.
 
-CLAIM: {claim}
-MEDIA URL (may be blank): {media_url or ""}
+Investigate whether a movie trailer or promotional-media claim is actually supported by public evidence.
 
-Return ONLY valid JSON with:
+CLAIM:
+{claim}
+
+MEDIA URL:
+{media_url or ""}
+
+Return ONLY valid JSON:
 {{
   "movie_or_franchise": "string",
-  "claim_type": "official_trailer|release_claim|studio_claim|other",
-  "verification_questions": ["..."],
-  "search_queries": ["..."]
+  "claim_type": "official_trailer|official_teaser|release_claim|studio_claim|other",
+  "verification_questions": ["question 1", "question 2", "question 3", "question 4"],
+  "search_queries": ["query 1", "query 2", "query 3", "query 4"]
 }}
 
 Rules:
-- Produce 3 to 5 high-signal search queries.
-- Include queries aimed at the official studio/distributor and reputable entertainment reporting.
-- Include one counter-evidence query for concept/fan/AI trailer indications.
 - Do not assume the claim is true or false.
+- Include at least one official-studio-focused query.
+- Include at least one reputable entertainment-news query.
+- Include at least one counter-evidence query for concept/fan-made/AI-assisted trailer indications.
+- Do not invent sources.
 """
-    response = _client().models.generate_content(model=MODEL, contents=prompt)
-    return _extract_json(response.text)
+    response = _client().models.generate_content(
+        model=MODEL,
+        contents=prompt,
+    )
+    return _clean_json(response.text)
 
-def synthesize(claim: str, evidence: list[dict], score: dict) -> dict:
+def synthesize_evidence(claim: str, evidence: list[dict], score: dict) -> dict:
     compact = [
         {
             "title": e.get("title"),
             "url": e.get("url"),
-            "excerpt": e.get("excerpt", "")[:900],
+            "excerpt": (e.get("excerpt") or "")[:1000],
             "source_tier": e.get("source_tier"),
+            "stance": e.get("stance"),
         }
         for e in evidence[:12]
     ]
-    prompt = f"""
-You are GhostFrame's evidence analyst. Analyze only the supplied evidence.
-Do not invent sources, facts, dates, or quotes.
 
-CLAIM: {claim}
-DETERMINISTIC SCORE: {json.dumps(score)}
-EVIDENCE: {json.dumps(compact)}
+    prompt = f"""
+You are GhostFrame's evidence analyst.
+
+Use ONLY the supplied evidence.
+Do not invent URLs, dates, announcements, quotes, or facts.
+
+CLAIM:
+{claim}
+
+DETERMINISTIC SCORE:
+{json.dumps(score)}
+
+EVIDENCE:
+{json.dumps(compact)}
 
 Return ONLY valid JSON:
 {{
@@ -63,8 +80,12 @@ Return ONLY valid JSON:
   "supporting_points": ["..."],
   "contradictions": ["..."],
   "uncertainties": ["..."],
+  "provenance_summary": "...",
   "recommended_next_check": "..."
 }}
 """
-    response = _client().models.generate_content(model=MODEL, contents=prompt)
-    return _extract_json(response.text)
+    response = _client().models.generate_content(
+        model=MODEL,
+        contents=prompt,
+    )
+    return _clean_json(response.text)
