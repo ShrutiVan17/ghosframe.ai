@@ -1,0 +1,23 @@
+:root{
+  --bg:#050509;--panel:#0d0d14;--line:#262638;--text:#f4f3ff;--muted:#9c9aae;
+  --violet:#8b5cf6;--cyan:#22d3ee;--red:#fb7185;--green:#34d399
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -10%,#24173c 0,#0b0814 28%,#050509 58%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+body{overflow-x:hidden}.noise{position:fixed;inset:0;pointer-events:none;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E")}
+.topbar{height:74px;display:flex;align-items:center;justify-content:space-between;padding:0 38px;border-bottom:1px solid #ffffff0b;backdrop-filter:blur(18px)}
+.logo{font-weight:950;letter-spacing:3px;font-size:18px}.logo span{color:var(--violet)}.status{font-size:11px;color:var(--muted);letter-spacing:1.2px}.status i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:8px;box-shadow:0 0 16px var(--green)}
+.shell{width:min(1180px,92vw);margin:auto;padding:80px 0 100px}.hero{max-width:860px;margin:0 auto;text-align:center}.eyebrow{font-size:11px;letter-spacing:2.5px;color:#b7a5ff;margin-bottom:16px}
+h1{font-size:clamp(54px,8vw,98px);line-height:.92;letter-spacing:-5px;margin:0;background:linear-gradient(180deg,#fff,#aaa4c4);-webkit-background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:18px;max-width:650px;margin:28px auto 34px;line-height:1.6}.searchbox{max-width:820px;margin:auto;padding:12px;border:1px solid var(--line);border-radius:20px;background:#0a0a11cc;box-shadow:0 30px 100px #000a}
+.searchbox input{width:100%;background:transparent;border:0;border-bottom:1px solid #20202f;padding:16px 14px;color:white;font:inherit;outline:none}.searchbox input:last-of-type{border-bottom:0}
+.searchbox button{width:100%;margin-top:10px;border:0;border-radius:13px;padding:17px;font-weight:900;letter-spacing:1px;color:#fff;background:linear-gradient(135deg,#7c3aed,#4f46e5);cursor:pointer;box-shadow:0 12px 40px #6d28d933}.searchbox button span{float:right}
+.scanner{position:relative;max-width:820px;height:240px;margin:48px auto 0;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#0b0b12,#07070b)}
+.scanline{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);box-shadow:0 0 24px var(--cyan);animation:scan 2s linear infinite}
+@keyframes scan{0%{top:0}100%{top:100%}}.scantext{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#b6b2cc;font-size:12px;letter-spacing:1.5px}
+.hidden{display:none!important}.result{margin-top:58px}.verdict-wrap{text-align:center;padding:50px 20px;border-top:1px solid #ffffff10;border-bottom:1px solid #ffffff10}.small{font-size:10px;letter-spacing:2px;color:var(--muted)}
+.verdict{font-size:clamp(42px,7vw,84px);font-weight:950;letter-spacing:-3px;margin-top:9px}.confidence{color:var(--muted);margin-top:8px}.verdict-wrap p{max-width:760px;margin:22px auto 0;color:#c9c6d7;line-height:1.7}
+.grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px;margin-top:18px}.panel{background:#0c0c12d9;border:1px solid var(--line);border-radius:18px;padding:22px}.panel h3{font-size:11px;letter-spacing:1.8px;color:#aaa6bc;margin:0 0 16px}
+.trace-item{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #1c1c28}.trace-num{color:#765cf2;font-weight:900}.source{padding:15px 0;border-bottom:1px solid #1c1c28}.source a{color:#d7d2ff;text-decoration:none;font-weight:800}.source p{color:var(--muted);line-height:1.5;margin:7px 0 0}
+.pill{display:inline-block;font-size:9px;letter-spacing:1px;padding:4px 7px;border-radius:999px;background:#1c1730;color:#bdaaff;margin-left:8px}.provenance{margin-top:18px}.provenance p{color:#c9c6d7;line-height:1.7}
+@media(max-width:800px){.topbar{padding:0 18px}.shell{padding-top:50px}.grid{grid-template-columns:1fr}h1{letter-spacing:-3px}.status{display:none}}
