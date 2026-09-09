@@ -1,16 +1,36 @@
 const $=id=>document.getElementById(id);
-const state={api:localStorage.getItem("ghostframe_api")||""};
+const savedApi=localStorage.getItem("ghostframe_api")||"";
+const state={api:/trycloudflare\.com|ngrok/i.test(savedApi)?"":savedApi};
+if(!state.api && savedApi){localStorage.removeItem("ghostframe_api");}
 
 function cleanApi(v){return (v||"").trim().replace(/\/$/,"")}
 function esc(v){return String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 
 $("connection").onclick=()=>{$("backendUrl").value=state.api;$("modal").classList.remove("hidden")};
 $("closeModal").onclick=()=>$("modal").classList.add("hidden");
-$("saveBackend").onclick=()=>{
- state.api=cleanApi($("backendUrl").value);
+async function verifyBackend(url){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),8000);
+  try{
+    const r=await fetch(cleanApi(url)+"/health",{signal:controller.signal,cache:"no-store"});
+    clearTimeout(timer);
+    if(!r.ok)return false;
+    const d=await r.json();
+    return d && d.status==="ok";
+  }catch(e){clearTimeout(timer);return false}
+}
+
+$("saveBackend").onclick=async()=>{
+ const candidate=cleanApi($("backendUrl").value);
+ if(!candidate){state.api="";localStorage.removeItem("ghostframe_api");$("connection").textContent="CONNECT CLOUD BACKEND";$("modal").classList.add("hidden");return}
+ $("saveBackend").textContent="TESTING CONNECTION...";
+ const ok=await verifyBackend(candidate);
+ $("saveBackend").textContent="SAVE CONNECTION";
+ if(!ok){alert("Backend is not reachable. Use your permanent Cloud Run URL, not an expired Cloudflare/ngrok URL.");return}
+ state.api=candidate;
  localStorage.setItem("ghostframe_api",state.api);
  $("modal").classList.add("hidden");
- $("connection").textContent=state.api?"BACKEND CONNECTED":"CONNECT CLOUD BACKEND";
+ $("connection").textContent="BACKEND CONNECTED";
 };
 if(state.api)$("connection").textContent="BACKEND CONNECTED";
 
@@ -49,5 +69,15 @@ $("run").onclick=async()=>{
    $("evidence").innerHTML=(d.evidence||[]).map((e,i)=>'<div class="source" style="animation-delay:'+i*.06+'s"><a target="_blank" rel="noopener" href="'+encodeURI(e.url||"#")+'">'+esc(e.title)+'</a><span class="pill">'+esc((e.source_tier||"web").toUpperCase())+'</span><p>'+esc((e.excerpt||"").slice(0,300))+'</p></div>').join("")||'<p>No evidence returned.</p>';
    $("provenance").textContent=d.analysis?.provenance_summary||"No provenance summary available.";
    graph(d.evidence||[]);$("scanner").classList.add("hidden");$("results").classList.remove("hidden");$("results").scrollIntoView({behavior:"smooth"});
- }catch(e){$("scanner").classList.add("hidden");alert(e.message)}
+ }catch(e){
+   $("scanner").classList.add("hidden");
+   if(String(e.message).includes("Failed to fetch") || e.name==="TypeError"){
+     localStorage.removeItem("ghostframe_api");
+     state.api="";
+     $("connection").textContent="CONNECT CLOUD BACKEND";
+     alert("Your saved backend URL is offline. GhostFrame cleared it. Connect a permanent Cloud Run URL and try again.");
+   }else{
+     alert(e.message);
+   }
+ }
 };
