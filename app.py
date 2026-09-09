@@ -23,14 +23,15 @@ class VerifyRequest(BaseModel):
 def health():
     return {
         "status": "ok",
-        "gemini_configured": bool(os.getenv("GEMINI_API_KEY")),
+        "vertex_project_configured": bool(os.getenv("GOOGLE_CLOUD_PROJECT")),
+        "vertex_location": os.getenv("GOOGLE_CLOUD_LOCATION", "global"),
         "parallel_configured": bool(os.getenv("PARALLEL_API_KEY")),
     }
 
 @app.post("/api/verify")
 def verify(req: VerifyRequest):
-    if not os.getenv("GEMINI_API_KEY"):
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured.")
+    if not os.getenv("GOOGLE_CLOUD_PROJECT"):
+        raise HTTPException(status_code=500, detail="GOOGLE_CLOUD_PROJECT is not configured.")
     if not os.getenv("PARALLEL_API_KEY"):
         raise HTTPException(status_code=500, detail="PARALLEL_API_KEY is not configured.")
 
@@ -39,7 +40,7 @@ def verify(req: VerifyRequest):
 
         queries = plan.get("search_queries", [])
         if not queries:
-            raise ValueError("Gemini returned no search queries.")
+            raise ValueError("Vertex AI returned no search queries.")
 
         evidence = search_parallel(
             objective=(
