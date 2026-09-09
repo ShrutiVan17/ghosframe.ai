@@ -1,7 +1,9 @@
 const $=id=>document.getElementById(id);
+const DEFAULT_API="https://ghostframe-api-production.up.railway.app";
 const savedApi=localStorage.getItem("ghostframe_api")||"";
-const state={api:/trycloudflare\.com|ngrok/i.test(savedApi)?"":savedApi};
-if(!state.api && savedApi){localStorage.removeItem("ghostframe_api");}
+const validSaved=/^https:\/\//i.test(savedApi) && !/trycloudflare\.com|ngrok/i.test(savedApi);
+const state={api:validSaved?savedApi:DEFAULT_API};
+if(!validSaved && savedApi){localStorage.removeItem("ghostframe_api");}
 
 function cleanApi(v){return (v||"").trim().replace(/\/$/,"")}
 function esc(v){return String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
@@ -32,7 +34,7 @@ $("saveBackend").onclick=async()=>{
  $("modal").classList.add("hidden");
  $("connection").textContent="BACKEND CONNECTED";
 };
-if(state.api)$("connection").textContent="BACKEND CONNECTED";
+if(state.api)$("connection").textContent="LIVE BACKEND CONNECTED";
 
 const canvas=$("particles"),ctx=canvas.getContext("2d");let dots=[];
 function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);dots=Array.from({length:Math.min(75,Math.floor(innerWidth/18))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,v:.12+Math.random()*.25,r:.4+Math.random()*1.3}))}
