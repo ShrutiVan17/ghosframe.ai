@@ -45,7 +45,8 @@ Rules:
 - Include at least one counter-evidence query for concept/fan-made/AI-assisted trailer indications.
 - Do not invent sources.
 """
-    response = _client().models.generate_content(
+    client = _client()
+    response = client.models.generate_content(
         model=MODEL,
         contents=prompt,
     )
@@ -88,7 +89,8 @@ Return ONLY valid JSON:
   "recommended_next_check": "..."
 }}
 """
-    response = _client().models.generate_content(
+    client = _client()
+    response = client.models.generate_content(
         model=MODEL,
         contents=prompt,
     )
