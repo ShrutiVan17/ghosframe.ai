@@ -13,7 +13,9 @@ def search_parallel(objective: str, queries: list[str], max_results: int = 10) -
         "mode": "fast",
         "objective": objective,
         "search_queries": queries[:5],
-        "max_results": max_results,
+        "advanced_settings": {
+            "max_results": max_results
+        },
     }
 
     with httpx.Client(timeout=45.0) as client:
