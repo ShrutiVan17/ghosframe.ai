@@ -6,15 +6,24 @@ from google import genai
 
 MODEL = "gemini-2.5-flash"
 
-def test_gemini():
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+def vertex_client():
+    project = os.environ["GOOGLE_CLOUD_PROJECT"]
+    location = os.getenv("GOOGLE_CLOUD_LOCATION", "global")
+    return genai.Client(
+        vertexai=True,
+        project=project,
+        location=location,
+    )
+
+def test_vertex():
+    client = vertex_client()
     response = client.models.generate_content(
         model=MODEL,
-        contents="Reply only with: GhostFrame Gemini is working",
+        contents="Reply only with: GhostFrame Vertex AI is working",
     )
     text = (response.text or "").strip()
-    if text != "GhostFrame Gemini is working":
-        raise RuntimeError(f"Unexpected Gemini response: {text}")
+    if text != "GhostFrame Vertex AI is working":
+        raise RuntimeError(f"Unexpected Vertex AI response: {text}")
 
 def test_parallel():
     headers = {
@@ -39,7 +48,7 @@ def main():
     load_dotenv(override=True)
 
     missing = [
-        name for name in ("GEMINI_API_KEY", "PARALLEL_API_KEY")
+        name for name in ("GOOGLE_CLOUD_PROJECT", "PARALLEL_API_KEY")
         if not os.getenv(name)
     ]
     if missing:
@@ -47,8 +56,8 @@ def main():
         sys.exit(1)
 
     try:
-        test_gemini()
-        print("Gemini authentication passed")
+        test_vertex()
+        print("Vertex AI authentication passed")
     except Exception as exc:
         status = getattr(exc, "status_code", None) or getattr(exc, "code", None)
         code = getattr(exc, "code", None)
@@ -56,7 +65,7 @@ def main():
         print(f"HTTP status: {status}")
         print(f"Google API error code: {code}")
         print(f"model name: {MODEL}")
-        print(f"exact billing/tier error message: {msg}")
+        print(f"Vertex AI error message: {msg}")
         sys.exit(1)
 
     try:
