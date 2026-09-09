@@ -116,6 +116,16 @@ function renderResult(d){
 }
 
 $("demoRun").onclick=()=>{
-  $("results").classList.add("hidden");$("scanner").classList.remove("hidden");animateSteps();
-  setTimeout(()=>renderResult(demoPayload),2900);
+  const btn=$("demoRun");
+  btn.disabled=true;
+  btn.textContent="ANALYZING DEMO...";
+  $("results").classList.add("hidden");
+  $("scanner").classList.remove("hidden");
+  animateSteps();
+  $("scanner").scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(()=>{
+    renderResult(demoPayload);
+    btn.disabled=false;
+    btn.textContent="RUN DEMO MODE";
+  },2900);
 };
