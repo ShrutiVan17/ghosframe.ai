@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException\nfrom fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -13,7 +14,15 @@ from services.verifier import score_evidence
 
 load_dotenv()
 
-app = FastAPI(title="GhostFrame AI", version="1.0.0")\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=["https://shrutivan17.github.io"],\n    allow_credentials=True,\n    allow_methods=["*"],\n    allow_headers=["*"],\n)
+app = FastAPI(title="GhostFrame AI", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://shrutivan17.github.io"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class VerifyRequest(BaseModel):
     claim: str
