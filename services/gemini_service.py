@@ -5,7 +5,11 @@ from google import genai
 MODEL = "gemini-2.5-flash"
 
 def _client():
-    return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+    return genai.Client(
+        vertexai=True,
+        project=os.environ["GOOGLE_CLOUD_PROJECT"],
+        location=os.getenv("GOOGLE_CLOUD_LOCATION", "global"),
+    )
 
 def _clean_json(text: str):
     cleaned = (text or "").strip()
