@@ -1,80 +1,69 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>GhostFrame — Trailer Authenticity Intelligence</title>
-<style>
-:root{--bg:#07070b;--panel:#111118;--line:#292937;--text:#f4f3ff;--muted:#a3a2b2;--violet:#8b5cf6;--cyan:#22d3ee;--red:#fb7185;--green:#34d399}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#21143a 0,#07070b 42%);color:var(--text);font:14px Inter,system-ui,sans-serif}
-.wrap{max-width:1180px;margin:auto;padding:34px 24px}.brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}.logo{font-size:26px;font-weight:900;letter-spacing:2px}.logo b{color:var(--violet)}.tag{color:var(--muted)}
-.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}.panel{background:#111118e8;border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 20px 70px #0007}
-h1{font-size:44px;line-height:1.04;margin:0 0 12px;letter-spacing:-1.8px}.lead{color:var(--muted);font-size:17px;line-height:1.55;margin-bottom:22px}
-label{font-weight:800;display:block;margin:13px 0 7px}.input{width:100%;border:1px solid #343446;background:#09090e;color:#fff;border-radius:11px;padding:14px;font:inherit;outline:none}.input:focus{border-color:var(--violet)}
-button{margin-top:14px;width:100%;border:0;border-radius:11px;padding:14px;background:linear-gradient(135deg,var(--violet),#6d28d9);color:#fff;font-weight:900;font-size:15px;cursor:pointer}.mini{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#0b0b11;border:1px solid var(--line);border-radius:13px;padding:15px}.stat strong{font-size:22px;display:block;margin-top:4px}.muted{color:var(--muted)}
-.result{display:none;margin-top:18px}.result.show{display:block}.verdict{font-size:34px;font-weight:950;margin:6px 0}.supported{color:var(--green)}.unverified{color:var(--cyan)}.unofficial{color:var(--red)}
-.grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px;margin-top:18px}.trace div{padding:9px 0;border-bottom:1px solid #252532}.source{padding:13px 0;border-bottom:1px solid #252532}.source a{color:#c4b5fd;text-decoration:none;font-weight:800}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#252037;color:#c4b5fd;font-size:11px;margin-left:6px}.loader{display:none;color:#c4b5fd;margin-top:12px}.loader.show{display:block}
-@media(max-width:800px){.hero,.grid{grid-template-columns:1fr}h1{font-size:34px}}
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GhostFrame AI</title>
+<link rel="stylesheet" href="/static/style.css">
 </head>
-<body><div class="wrap">
-<div class="brand"><div class="logo">GHOST<b>FRAME</b></div><div class="tag">Agentic Trailer Authenticity Intelligence</div></div>
-<div class="hero">
- <section class="panel">
-   <div class="muted">MEDIA PROVENANCE AGENT</div>
-   <h1>Is that “official” trailer actually official?</h1>
-   <p class="lead">GhostFrame investigates a trailer claim against live web evidence, traces contradictions, and returns an explainable authenticity verdict.</p>
-   <label>Trailer claim</label>
-   <input id="claim" class="input" value="This is the official trailer for Avengers: Secret Wars."/>
-   <label>Trailer URL (optional)</label>
-   <input id="url" class="input" placeholder="https://youtube.com/watch?v=..."/>
-   <button onclick="verifyClaim()">INVESTIGATE CLAIM →</button>
-   <div id="loader" class="loader">Gemini is planning the investigation → Parallel is retrieving live evidence → GhostFrame is scoring provenance…</div>
- </section>
- <aside class="panel">
-   <div class="muted">WHY GHOSTFRAME</div>
-   <h2>Verify the claim, not just the pixels.</h2>
-   <p class="muted">A fan-made trailer may use AI and still be honestly labeled. An edited trailer may use no AI and still falsely claim to be official. GhostFrame investigates provenance and context.</p>
-   <div class="mini">
-    <div class="stat"><span class="muted">Gemini</span><strong>Reason</strong></div>
-    <div class="stat"><span class="muted">Parallel</span><strong>Research</strong></div>
-    <div class="stat"><span class="muted">Evidence</span><strong>Trace</strong></div>
-    <div class="stat"><span class="muted">Output</span><strong>Verdict</strong></div>
-   </div>
- </aside>
-</div>
+<body>
+<div class="noise"></div>
 
-<section id="result" class="result">
- <div class="panel">
-  <div class="muted">GHOSTFRAME VERDICT</div>
-  <div id="verdict" class="verdict">—</div>
-  <div id="confidence" class="muted"></div>
-  <p id="summary"></p>
- </div>
- <div class="grid">
-  <div class="panel"><h3>Investigation Trace</h3><div id="trace" class="trace"></div></div>
-  <div class="panel"><h3>Live Evidence</h3><div id="evidence"></div></div>
- </div>
-</section>
-</div>
-<script>
-async function verifyClaim(){
- const claim=document.getElementById('claim').value.trim();
- if(!claim)return;
- document.getElementById('loader').classList.add('show');
- document.getElementById('result').classList.remove('show');
- try{
-  const r=await fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({claim,media_url:document.getElementById('url').value.trim()||null})});
-  const data=await r.json(); if(!r.ok)throw new Error(data.detail||'Verification failed');
-  const v=data.score.verdict;
-  const el=document.getElementById('verdict'); el.textContent=v;
-  el.className='verdict '+(v==='SUPPORTED'?'supported':v==='LIKELY UNOFFICIAL'?'unofficial':'unverified');
-  document.getElementById('confidence').textContent='Confidence '+Math.round(data.score.confidence*100)+'% • support '+data.score.support_score+' • contradiction '+data.score.contradiction_score;
-  document.getElementById('summary').textContent=data.analysis.summary||'Evidence analysis completed.';
-  document.getElementById('trace').innerHTML=(data.plan.verification_questions||[]).map((q,i)=>'<div><b>0'+(i+1)+'</b> &nbsp;'+escapeHtml(q)+'</div>').join('');
-  document.getElementById('evidence').innerHTML=(data.evidence||[]).map(e=>'<div class="source"><a target="_blank" rel="noopener" href="'+encodeURI(e.url)+'">'+escapeHtml(e.title)+'</a><span class="pill">'+escapeHtml(e.source_tier||'web')+'</span><div class="muted">'+escapeHtml((e.excerpt||'').slice(0,280))+'</div></div>').join('')||'<div class="muted">No evidence returned.</div>';
-  document.getElementById('result').classList.add('show');
- }catch(e){alert(e.message)}
- finally{document.getElementById('loader').classList.remove('show')}
-}
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-</script></body></html>
+<header class="topbar">
+  <div class="logo">GHOST<span>FRAME</span></div>
+  <div class="status"><i></i> LIVE EVIDENCE ENGINE</div>
+</header>
+
+<main class="shell">
+  <section class="hero">
+    <div class="eyebrow">MEDIA PROVENANCE INTELLIGENCE</div>
+    <h1>See what’s behind<br>the frame.</h1>
+    <p>Investigate whether an “official” trailer is actually supported by live public evidence.</p>
+
+    <div class="searchbox">
+      <input id="claim" value="This is the official trailer for Avengers: Secret Wars." placeholder="Enter trailer claim">
+      <input id="url" placeholder="Trailer URL (optional)">
+      <button id="investigate">INVESTIGATE <span>→</span></button>
+    </div>
+  </section>
+
+  <section id="scanner" class="scanner hidden">
+    <div class="scanline"></div>
+    <div class="scantext">
+      <div>CLAIM RECEIVED</div>
+      <div>GEMINI PLANNING INVESTIGATION</div>
+      <div>PARALLEL SEARCHING LIVE WEB</div>
+      <div>SCORING PROVENANCE</div>
+    </div>
+  </section>
+
+  <section id="result" class="result hidden">
+    <div class="verdict-wrap">
+      <div class="small">GHOSTFRAME VERDICT</div>
+      <div id="verdict" class="verdict">UNVERIFIED</div>
+      <div id="confidence" class="confidence"></div>
+      <p id="summary"></p>
+    </div>
+
+    <div class="grid">
+      <section class="panel">
+        <h3>INVESTIGATION TRACE</h3>
+        <div id="trace"></div>
+      </section>
+
+      <section class="panel">
+        <h3>LIVE EVIDENCE</h3>
+        <div id="evidence"></div>
+      </section>
+    </div>
+
+    <section class="panel provenance">
+      <h3>PROVENANCE SUMMARY</h3>
+      <p id="provenance"></p>
+    </section>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
