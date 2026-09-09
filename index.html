@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050509">
+<title>GhostFrame — Media Provenance Intelligence</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="noise"></div>
+<div class="film-rail left"></div>
+<div class="film-rail right"></div>
+
+<header>
+  <div class="logo">GHOST<span>FRAME</span></div>
+  <div class="system"><i></i> PROVENANCE ENGINE ONLINE</div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow reveal">MEDIA PROVENANCE INTELLIGENCE</div>
+    <h1 class="reveal delay1">SEE WHAT'S<br><span>BEHIND THE FRAME.</span></h1>
+    <p class="reveal delay2">One claim. Live evidence. An explainable verdict.</p>
+
+    <div class="terminal reveal delay3">
+      <div class="terminal-top">
+        <span></span><span></span><span></span>
+        <b>GHOSTFRAME / INVESTIGATION</b>
+      </div>
+      <input id="claim" value="This is the official trailer for Avengers: Secret Wars.">
+      <input id="mediaUrl" placeholder="Trailer URL — optional">
+      <button id="run">INVESTIGATE <strong>→</strong></button>
+    </div>
+
+    <button class="connection" id="connection">CONNECT CLOUD BACKEND</button>
+  </section>
+
+  <section id="scanner" class="scanner hidden">
+    <div class="scan-grid"></div>
+    <div class="laser"></div>
+    <div class="scanner-core">
+      <div class="aperture">
+        <div class="aperture-ring r1"></div>
+        <div class="aperture-ring r2"></div>
+        <div class="aperture-ring r3"></div>
+        <div class="eye"></div>
+      </div>
+      <div class="steps">
+        <div class="step active"><b>01</b><span>CLAIM PARSED</span></div>
+        <div class="step"><b>02</b><span>GEMINI PLANNING</span></div>
+        <div class="step"><b>03</b><span>PARALLEL SEARCH</span></div>
+        <div class="step"><b>04</b><span>PROVENANCE SCORING</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" class="results hidden">
+    <div class="verdict-stage">
+      <div class="halo"></div>
+      <small>GHOSTFRAME VERDICT</small>
+      <h2 id="verdict">UNVERIFIED</h2>
+      <div id="confidence" class="confidence"></div>
+      <p id="summary"></p>
+    </div>
+
+    <div class="graph-stage">
+      <div class="graph-title">EVIDENCE PROVENANCE MAP</div>
+      <div id="graph" class="graph">
+        <div class="center-node">CLAIM</div>
+      </div>
+    </div>
+
+    <div class="columns">
+      <article class="panel">
+        <label>INVESTIGATION TRACE</label>
+        <div id="trace"></div>
+      </article>
+      <article class="panel">
+        <label>LIVE EVIDENCE</label>
+        <div id="evidence"></div>
+      </article>
+    </div>
+
+    <article class="panel provenance">
+      <label>PROVENANCE SUMMARY</label>
+      <p id="provenance"></p>
+    </article>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <button id="closeModal" class="close">×</button>
+    <small>BACKEND CONNECTION</small>
+    <h3>Connect GhostFrame</h3>
+    <p>Paste your Cloud Run URL. It is saved only in this browser.</p>
+    <input id="backendUrl" placeholder="https://ghostframe-xxxxx.a.run.app">
+    <button id="saveBackend">SAVE CONNECTION</button>
+  </div>
+</div>
+
+<script src="./app.js"></script>
+</body>
+</html>
