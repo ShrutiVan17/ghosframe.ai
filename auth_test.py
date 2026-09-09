@@ -34,7 +34,9 @@ def test_parallel():
         "mode": "fast",
         "objective": "Authentication test. Find the official Parallel website.",
         "search_queries": ["Parallel official website"],
-        "max_results": 1,
+        "advanced_settings": {
+            "max_results": 1
+        },
     }
     with httpx.Client(timeout=30.0) as client:
         response = client.post(
