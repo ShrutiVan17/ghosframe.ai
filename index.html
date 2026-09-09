@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#050509">
 <title>GhostFrame — Media Provenance Intelligence</title>
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css?v=0909-4">
 </head>
 <body>
 <canvas id="particles"></canvas>
@@ -15,7 +15,7 @@
 
 <header>
   <div class="logo">GHOST<span>FRAME</span></div>
-  <div class="system"><i></i> PROVENANCE ENGINE ONLINE · BUILD 0909-3</div>
+  <div class="system"><i></i> PROVENANCE ENGINE ONLINE · BUILD 0909-4</div>
 </header>
 
 <main>
@@ -31,7 +31,7 @@
       </div>
       <input id="claim" value="This is the official trailer for Avengers: Secret Wars.">
       <input id="mediaUrl" placeholder="Trailer URL — optional">
-      <button id="run">INVESTIGATE <strong>→</strong></button><button id="demoRun" class="demo-btn">RUN DEMO MODE</button>
+      <button id="run">INVESTIGATE <strong>→</strong></button><button id="demoRun" class="demo-btn" type="button" onclick="runGhostFrameDemoFallback(event)">RUN DEMO MODE</button>
     </div>
 
     <button class="connection" id="connection">CONNECT CLOUD BACKEND</button>
@@ -101,6 +101,49 @@
   </div>
 </div>
 
-<script src="./app.js"></script>
+<script src="./app.js?v=0909-4"></script>
+<script>
+function runGhostFrameDemoFallback(event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  const byId=(id)=>document.getElementById(id);
+  const btn=byId("demoRun"),scanner=byId("scanner"),results=byId("results");
+  if(!btn||!scanner||!results){alert("GhostFrame UI did not load correctly. Refresh the page.");return false;}
+  btn.disabled=true;
+  btn.textContent="ANALYZING DEMO...";
+  results.classList.add("hidden");
+  scanner.classList.remove("hidden");
+  scanner.scrollIntoView({behavior:"smooth",block:"center"});
+  const steps=Array.from(document.querySelectorAll(".step"));
+  steps.forEach((s,i)=>{
+    s.classList.remove("active");
+    setTimeout(()=>s.classList.add("active"),i*450);
+  });
+  setTimeout(()=>{
+    byId("verdict").textContent="LIKELY UNOFFICIAL";
+    byId("verdict").style.color="#fb7185";
+    byId("confidence").textContent="CONFIDENCE 94%  ·  SUPPORT 1  ·  CONTRADICTION 8";
+    byId("summary").textContent="The available provenance signals do not support this as an official studio trailer. The strongest signals point to unofficial or concept-trailer circulation.";
+    byId("trace").innerHTML=[
+      "Has Marvel Studios officially released this trailer?",
+      "Do reputable entertainment outlets confirm the release?",
+      "Are circulating uploads labeled concept, fan-made, or unofficial?",
+      "Does the media trace back to an official studio source?"
+    ].map((q,i)=>'<div class="trace-item"><b>0'+(i+1)+'</b><span>'+q+'</span></div>').join("");
+    byId("evidence").innerHTML=
+      '<div class="source"><a href="https://www.marvel.com/" target="_blank" rel="noopener">Marvel official channels</a><span class="pill">OFFICIAL</span><p>No matching official trailer release is demonstrated in this demo dataset.</p></div>'+
+      '<div class="source"><a href="https://variety.com/" target="_blank" rel="noopener">Major entertainment reporting</a><span class="pill">REPUTABLE</span><p>Reputable reporting is checked for confirmation of an official release.</p></div>'+
+      '<div class="source"><a href="#" onclick="return false;">Concept / fan trailer signals</a><span class="pill">WEB</span><p>Circulating uploads may use labels such as concept trailer, fan-made, unofficial, or AI-generated.</p></div>';
+    byId("provenance").textContent="DEMO DATA — GhostFrame compares claim wording, source authority, publication context, contradictory language, and provenance signals. Connect the live backend for real-time verification.";
+    const g=byId("graph");
+    g.innerHTML='<div class="center-node">CLAIM</div><div class="e-node contradiction" style="left:12%;top:25%">OFFICIAL</div><div class="e-node neutral" style="right:12%;top:25%">REPUTABLE</div><div class="e-node contradiction" style="left:40%;bottom:12%">WEB SIGNALS</div>';
+    scanner.classList.add("hidden");
+    results.classList.remove("hidden");
+    btn.disabled=false;
+    btn.textContent="RUN DEMO MODE";
+    results.scrollIntoView({behavior:"smooth",block:"start"});
+  },2200);
+  return false;
+}
+</script>
 </body>
 </html>
