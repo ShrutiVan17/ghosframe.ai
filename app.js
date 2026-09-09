@@ -1,0 +1,53 @@
+const $=id=>document.getElementById(id);
+const state={api:localStorage.getItem("ghostframe_api")||""};
+
+function cleanApi(v){return (v||"").trim().replace(/\/$/,"")}
+function esc(v){return String(v||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+
+$("connection").onclick=()=>{$("backendUrl").value=state.api;$("modal").classList.remove("hidden")};
+$("closeModal").onclick=()=>$("modal").classList.add("hidden");
+$("saveBackend").onclick=()=>{
+ state.api=cleanApi($("backendUrl").value);
+ localStorage.setItem("ghostframe_api",state.api);
+ $("modal").classList.add("hidden");
+ $("connection").textContent=state.api?"BACKEND CONNECTED":"CONNECT CLOUD BACKEND";
+};
+if(state.api)$("connection").textContent="BACKEND CONNECTED";
+
+const canvas=$("particles"),ctx=canvas.getContext("2d");let dots=[];
+function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);dots=Array.from({length:Math.min(75,Math.floor(innerWidth/18))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,v:.12+Math.random()*.25,r:.4+Math.random()*1.3}))}
+function animate(){ctx.clearRect(0,0,innerWidth,innerHeight);ctx.fillStyle="rgba(167,139,250,.38)";dots.forEach(d=>{d.y-=d.v;if(d.y<0)d.y=innerHeight;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,Math.PI*2);ctx.fill()});requestAnimationFrame(animate)}
+addEventListener("resize",resize);resize();animate();
+
+function animateSteps(){
+ const steps=[...document.querySelectorAll(".step")];steps.forEach(s=>s.classList.remove("active"));
+ steps.forEach((s,i)=>setTimeout(()=>s.classList.add("active"),i*700));
+}
+function graph(evidence){
+ const g=$("graph");g.innerHTML='<div class="center-node">CLAIM</div>';
+ const items=(evidence||[]).slice(0,8);const cx=g.clientWidth/2,cy=g.clientHeight/2;
+ items.forEach((e,i)=>{
+   const ang=(Math.PI*2/items.length)*i-.6,r=125+(i%2)*28;
+   const x=cx+Math.cos(ang)*r,y=cy+Math.sin(ang)*r;
+   const n=document.createElement("div");n.className="e-node "+(e.stance||"neutral");n.textContent=(e.source_tier||"WEB").toUpperCase();n.style.left=x+"px";n.style.top=y+"px";n.style.animationDelay=(i*.08)+"s";g.appendChild(n);
+   const dx=x-cx,dy=y-cy,len=Math.sqrt(dx*dx+dy*dy),line=document.createElement("div");line.className="connector";line.style.left=cx+"px";line.style.top=cy+"px";line.style.width=len+"px";line.style.transform="rotate("+Math.atan2(dy,dx)+"rad)";g.insertBefore(line,n);
+ });
+}
+
+$("run").onclick=async()=>{
+ if(!state.api){$("modal").classList.remove("hidden");return}
+ const claim=$("claim").value.trim();if(!claim)return;
+ $("results").classList.add("hidden");$("scanner").classList.remove("hidden");animateSteps();
+ try{
+   const r=await fetch(state.api+"/api/verify",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({claim,media_url:$("mediaUrl").value.trim()||null})});
+   const d=await r.json();if(!r.ok)throw new Error(d.detail||"Investigation failed");
+   const s=d.score||{},v=s.verdict||"UNVERIFIED";$("verdict").textContent=v;
+   $("verdict").style.color=v==="SUPPORTED"?"#34d399":v==="LIKELY UNOFFICIAL"?"#fb7185":"#22d3ee";
+   $("confidence").textContent="CONFIDENCE "+Math.round((s.confidence||0)*100)+"%  ·  SUPPORT "+(s.support_score||0)+"  ·  CONTRADICTION "+(s.contradiction_score||0);
+   $("summary").textContent=d.analysis?.summary||"Investigation complete.";
+   $("trace").innerHTML=(d.plan?.verification_questions||[]).map((q,i)=>'<div class="trace-item" style="animation-delay:'+i*.08+'s"><b>0'+(i+1)+'</b><span>'+esc(q)+'</span></div>').join("");
+   $("evidence").innerHTML=(d.evidence||[]).map((e,i)=>'<div class="source" style="animation-delay:'+i*.06+'s"><a target="_blank" rel="noopener" href="'+encodeURI(e.url||"#")+'">'+esc(e.title)+'</a><span class="pill">'+esc((e.source_tier||"web").toUpperCase())+'</span><p>'+esc((e.excerpt||"").slice(0,300))+'</p></div>').join("")||'<p>No evidence returned.</p>';
+   $("provenance").textContent=d.analysis?.provenance_summary||"No provenance summary available.";
+   graph(d.evidence||[]);$("scanner").classList.add("hidden");$("results").classList.remove("hidden");$("results").scrollIntoView({behavior:"smooth"});
+ }catch(e){$("scanner").classList.add("hidden");alert(e.message)}
+};
